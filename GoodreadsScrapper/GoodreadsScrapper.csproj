@@ -6,7 +6,7 @@
     <Authors>Ben Robinson</Authors>
     <Description>Unofficial C# Library to access Goodreads data</Description>
     <PackageId>GoodreadsScrapper</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/bsrobinson/GoodreadsScrapper</RepositoryUrl>
@@ -22,7 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Schema.NET" Version="11.0.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
   </ItemGroup>
 
