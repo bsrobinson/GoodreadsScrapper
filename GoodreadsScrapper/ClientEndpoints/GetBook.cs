@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using GoodreadsScrapper.Extensions;
 using GoodreadsScrapper.Models;
+using GoodreadsScrapper.Models.JsonLd;
 using HtmlAgilityPack;
 
 namespace GoodreadsScrapper
@@ -18,47 +20,34 @@ namespace GoodreadsScrapper
             HtmlWeb web = new HtmlWeb();
             HtmlNode doc = (await web.LoadFromWebAsync(url)).DocumentNode;
 
-            HtmlNode? author = doc.SelectNodes(".//*[@itemprop='author']")?.FirstOrDefault();
-            string? authorName = author?.SelectNodes(".//*[@itemprop='name']")?.FirstOrDefault()?.CleanText();
-            string? authorUrl = author?.SelectNodes(".//*[@itemprop='url']")?.FirstOrDefault()?.GetAttributeValue("href", null)?.CompleteUrl();
-            if (author != null)
-            {
-                author.Remove();
-            }
+            var ldJsonScript = doc.SelectSingleNode("//script[@type='application/ld+json']");
+            JsonLdBook? bookData = JsonSerializer.Deserialize<JsonLdBook>(ldJsonScript.InnerHtml);
 
-            int? id = doc.SelectNodes(".//*[@id='book_id']")?.FirstOrDefault()?.GetAttributeValue("value", (int?)null);
-            string? name = doc.SelectNodes(".//*[@itemprop='name']")?.FirstOrDefault()?.CleanText();
-            double.TryParse(doc.SelectNodes(".//*[@itemprop='ratingValue']")?.FirstOrDefault()?.CleanText(), out double rating);
+            int id = 0;
+            Match idMatch = new Regex(@"""book_id"":""(\d*?)""").Match(doc.InnerHtml);
+            bool idParsed = idMatch.Success ? int.TryParse(idMatch.Groups[1].Value, out id) : false;
 
-            Match publishYearMatch = new Regex("first published.{1,25}?(\\d{4})").Match(doc.InnerHtml);
+            int year = 0;
+            Match publishYearMatch = new Regex("First published.{1,25}?(\\d{4})").Match(doc.InnerHtml);
             if (!publishYearMatch.Success)
             {
                 publishYearMatch = new Regex("Published.{1,25}?(\\d{4})").Match(doc.InnerHtml);
             }
-
-            HtmlNode? seriesNode = doc.SelectNodes(".//*[@class='seriesList']")?.FirstOrDefault();
-            HtmlNode? seriesLink = seriesNode?.SelectNodes(".//a[contains(@href, '/series/')]")?.FirstOrDefault();
-            string? seriesUrl = seriesLink?.GetAttributeValue("href", null)?.CompleteUrl();
+            bool yearParsed = publishYearMatch.Success ? int.TryParse(publishYearMatch.Groups[1].Value, out year) : false;
 
             Series? series = null;
-            if (seriesUrl != null && includeSeries)
+            if (includeSeries)
             {
-                series = await GetBookSeriesAsync(seriesUrl, id);
+                Match seriesMatch = new Regex(@"goodreads.com/series/(\d*)").Match(doc.InnerHtml);
+                if (seriesMatch.Success && int.TryParse(seriesMatch.Groups[1].Value, out int seriesId))
+                {
+                    series = await GetBookSeriesAsync(seriesId, id);
+                }
             }
 
-            if (id != null && name != null)
+            if (bookData != null && idParsed)
             {
-                return new((int)id, name)
-                {
-                    Image = doc.SelectNodes(".//img[@id='coverImage']")?.FirstOrDefault()?.GetAttributeValue("src", null)?.CompleteUrl(),
-                    Url = url,
-                    Author = authorName == null ? null : new(authorName) { Url = authorUrl },
-                    PublishedYear = publishYearMatch.Success ? int.Parse(publishYearMatch.Groups[1].Value) : null,
-                    Rating = rating,
-                    RatingCount = doc.SelectNodes(".//*[@itemprop='ratingCount']")?.FirstOrDefault()?.GetAttributeValue("content", (int?)null),
-                    ReviewCount = doc.SelectNodes(".//*[@itemprop='reviewCount']")?.FirstOrDefault()?.GetAttributeValue("content", (int?)null),
-                    Series = series
-                };
+                return new(id, bookData, url, yearParsed ? year : null, series);
             }
 
             return null;

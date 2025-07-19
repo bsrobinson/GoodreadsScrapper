@@ -1,4 +1,6 @@
-﻿namespace GoodreadsScrapper.Models
+﻿using GoodreadsScrapper.Models.JsonLd;
+
+namespace GoodreadsScrapper.Models
 {
     public class SearchBook
     {
@@ -13,6 +15,16 @@
         {
             Id = id;
             Name = name;
+        }
+
+        public SearchBook(int id, JsonLdBook book, string url, int? publishedYear)
+        {
+            Id = id;
+            Name = book.Name;
+            Image = book.Image;
+            Url = url;
+            Author = book.Author.Count > 0 ? new(book.Author[0]) : null;
+            PublishedYear = publishedYear;
         }
     }
 }

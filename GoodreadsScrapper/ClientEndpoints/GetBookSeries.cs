@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using GoodreadsScrapper.Extensions;
 using GoodreadsScrapper.Models;
 using HtmlAgilityPack;
@@ -18,9 +17,9 @@ namespace GoodreadsScrapper
             List<BookInSeries> searchResults = new();
 
             HtmlWeb web = new HtmlWeb();
-            HtmlNode document = (await web.LoadFromWebAsync(url)).DocumentNode;
+            HtmlNode doc = (await web.LoadFromWebAsync(url)).DocumentNode;
 
-            HtmlNodeCollection results = document.SelectNodes("//*[@itemtype='http://schema.org/Book']");
+            HtmlNodeCollection results = doc.SelectNodes("//*[@itemtype='http://schema.org/Book']");
             if (results != null)
             {
                 foreach (HtmlNode result in results)
@@ -70,7 +69,7 @@ namespace GoodreadsScrapper
             {
                 int id = int.Parse(url.LastPathComponent()?.IdFromSlug() ?? "0");
 
-                string? titleText = document.SelectNodes(".//title")?.FirstOrDefault()?.CleanText();
+                string? titleText = doc.SelectNodes(".//title")?.FirstOrDefault()?.CleanText();
                 Match nameMatch = new Regex("(.*?) Series").Match(titleText ?? "");
 
                 return new Series(id)

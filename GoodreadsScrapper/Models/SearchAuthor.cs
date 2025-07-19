@@ -1,4 +1,6 @@
-﻿namespace GoodreadsScrapper.Models
+﻿using GoodreadsScrapper.Models.JsonLd;
+
+namespace GoodreadsScrapper.Models
 {
     public class Author
     {
@@ -8,6 +10,12 @@
         public Author(string name)
         {
             Name = name;
+        }
+
+        public Author(JsonLdAuthor author)
+        {
+            Name = author.Name;
+            Url = author.Url;
         }
     }
 }
