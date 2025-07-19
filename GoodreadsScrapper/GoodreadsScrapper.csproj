@@ -6,7 +6,7 @@
     <Authors>Ben Robinson</Authors>
     <Description>Unofficial C# Library to access Goodreads data</Description>
     <PackageId>GoodreadsScrapper</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/bsrobinson/GoodreadsScrapper</RepositoryUrl>
