@@ -24,7 +24,7 @@ namespace GoodreadsScrapper
             JsonLdBook? bookData = JsonSerializer.Deserialize<JsonLdBook>(ldJsonScript.InnerHtml);
 
             int id = 0;
-            Match idMatch = new Regex(@"""book_id"":""(\d*?)""").Match(doc.InnerHtml);
+            Match idMatch = new Regex(@"""book_id"":""(\d*)").Match(doc.InnerHtml);
             bool idParsed = idMatch.Success ? int.TryParse(idMatch.Groups[1].Value, out id) : false;
 
             int year = 0;
